@@ -134,6 +134,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     .attr("class", "tooltip")
     .html(function(d) {
       return (`<h6>${titleCase(chosenYAxis) + " vs. " + titleCase(chosenXAxis)}</h6><hr>
+        <h6>${d.state}</h6>
         ${titleCase(chosenYAxis) + ": " + d[chosenYAxis]}<br>
         ${titleCase(chosenXAxis) + ": " + d[chosenXAxis]}`);
     });
