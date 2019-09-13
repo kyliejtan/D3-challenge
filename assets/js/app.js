@@ -1,3 +1,7 @@
+////////////////////////////////////////////////////////////////////////////////
+// This section sets up the basic characteristics of the svg window and chart //
+// area.                                                                      //
+////////////////////////////////////////////////////////////////////////////////
 // Defining the svg window dimensions
 let svgWidth = 960;
 let svgHeight = 600;
@@ -26,7 +30,10 @@ let chartGroup = svg.append("g")
 // Initial x-axis parameter
 let chosenXAxis = "poverty";
 let chosenYAxis = "healthcare"
-
+////////////////////////////////////////////////////////////////////////////////
+// This section is where the functions that will help build the scatter plot  //
+// are defined.                                                               //
+////////////////////////////////////////////////////////////////////////////////
 // function used for updating x-scale let  upon click on axis label
 function capitalizeFirstLetter(str) {
   if (str.charAt(0) === "(") {
@@ -38,7 +45,7 @@ function capitalizeFirstLetter(str) {
 function titleCase(str) {
     return str.split(" ").map(x => capitalizeFirstLetter(x)).join(" ")
 };
-
+//
 function xScale(healthData, chosenXAxis) {
   // create scales
   let  xLinearScale = d3.scaleLinear()
@@ -50,7 +57,7 @@ function xScale(healthData, chosenXAxis) {
   return xLinearScale;
 
 }
-
+//
 function yScale(healthData, chosenYAxis) {
   // create scales
   let  yLinearScale = d3.scaleLinear()
@@ -61,7 +68,6 @@ function yScale(healthData, chosenYAxis) {
 
   return yLinearScale;
 }
-
 // function used for updating xAxis let  upon click on axis label
 function renderXAxe(newXScale, xAxis) {
   let bottomAxis = d3.axisBottom(newXScale);
@@ -72,7 +78,7 @@ function renderXAxe(newXScale, xAxis) {
 
   return xAxis;
 }
-
+//
 function renderYAxe(newYScale, yAxis) {
   let leftAxis = d3.axisLeft(newYScale);
 
@@ -82,20 +88,16 @@ function renderYAxe(newYScale, yAxis) {
 
   return yAxis;
 }
-
-// function used for updating circles group with a transition to
-// new circles
+//
 function renderXCircles(circlesGroup, newXScale, chosenXaxis) {
 
   circlesGroup.transition()
     .duration(1000)
     .attr("cx", d => newXScale(d[chosenXAxis]));
 
-/* Create the text for each block */
-
   return circlesGroup;
 }
-
+//
 function renderYCircles(circlesGroup, newYScale, chosenYaxis) {
   circlesGroup.transition()
     .duration(1000)
@@ -103,7 +105,6 @@ function renderYCircles(circlesGroup, newYScale, chosenYaxis) {
 
   return circlesGroup;
 }
-
 // Appending text inside each circle
 function renderPointLabels(circleLabels, chosenXAxis, chosenYAxis, xLinearScale, yLinearScale) {
 
@@ -156,11 +157,15 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
   return circlesGroup;
 }
+////////////////////////////////////////////////////////////////////////////////
+// This section is where the csv data is read in and passed to the chart-     //
+// building functions, the results of which are then appended to the svg chart//
+////////////////////////////////////////////////////////////////////////////////
+// ===========================================================================//
 // Import data from the data.csv file
-// =================================
 d3.csv("assets/data/data.csv", function(error, healthData) {
   if (error) throw error;
-
+  // Parsing the string data in healthData into integers
   healthData.forEach(function(data) {
     data.id = +data.id;
     data.state = data.state;
@@ -181,30 +186,33 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     data.smokesLow = +data.smokesLow;
     data.smokesHigh = +data.smokesHigh;
   });
-
+  // Initializing a variable with the the default linear scale for the x axis
   let xLinearScale = d3.scaleLinear()
     .domain(d3.extent(healthData, d => d.poverty))
     .range([0, width]);
 
+  // Initializing a variable with the the default linear scale for the y axis
   let yLinearScale = d3.scaleLinear()
     .domain([d3.max(healthData, d => d.healthcare), 0])
     .range([0, height]);
 
+  // Initializing variables with the default x and y axes
   let bottomAxis = d3.axisBottom(xLinearScale);
   let leftAxis = d3.axisLeft(yLinearScale);
 
-  //append x axis
+  // Appending the x-axis to the svg chart area
   let xAxis = chartGroup.append("g")
     .classed("x-axis", true)
     .attr("transform", `translate(0, ${height})`)
     .call(bottomAxis);
 
-  // append y axis
+  // Appending the x-axis to the svg chart area
   let yAxis = chartGroup.append("g")
     .classed("y-axis", true)
     .call(leftAxis);
 
-  // append initial circles
+  // Initializing a variable with the default scatter plot points that are
+  // appended to the svg chart area
   let circlesGroup = chartGroup.selectAll("circle")
     .data(healthData)
     .enter()
@@ -215,11 +223,14 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     .attr("fill", "lightblue")
     .attr("opacity", "1");
 
+  // Appending text to each scatter plot point
   let circleLabels = chartGroup.selectAll(null)
     .data(healthData)
     .enter()
     .append("text");
 
+  // Defining the values and default position of the text that was appended to
+  // each scatter plot point
   circleLabels
     .attr("x", function(d) {
       return xLinearScale(d.poverty);
@@ -235,41 +246,45 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     .attr("text-anchor", "middle")
     .attr("fill", "white");
 
-  // Create group for  2 x- axis labels
+  // Initializing a variable with an area for x-axis labels that has been
+  // appended to the svg chart area
   let xlabelsGroup = chartGroup.append("g")
     .attr("transform", `translate(${width / 2}, ${height + 20})`);
 
+  // The following three variables store the properties of each x-axis label
   let povertyLabel = xlabelsGroup.append("text")
     .attr("x", 0)
     .attr("y", 20)
-    .attr("value", "poverty") // value to grab for event listener
+    .attr("value", "poverty")
     .classed("active", true)
     .text("In Poverty (%)");
 
   let ageLabel = xlabelsGroup.append("text")
     .attr("x", 0)
     .attr("y", 40)
-    .attr("value", "age") // value to grab for event listener
+    .attr("value", "age")
     .classed("inactive", true)
     .text("Age (Median)");
 
   let incomeLabel = xlabelsGroup.append("text")
     .attr("x", 0)
     .attr("y", 60)
-    .attr("value", "income") // value to grab for event listener
+    .attr("value", "income")
     .classed("inactive", true)
     .text("Household Income (Median)");
 
-  // append y axis
+  // Initializing a variable with an area for y-axis labels that has been
+  // appended to the svg chart area
   let  ylabelsGroup = chartGroup.append("g")
     .attr("transform", `translate(-50, ${height / 2})`);
 
+  // The following three variables store the properties of each x-axis label
   let healthcareLabel = ylabelsGroup.append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", 0)
     .attr("x", 0)
     .attr("dy", "1em")
-    .attr("value", "healthcare") // value to grab for event listener
+    .attr("value", "healthcare")
     .classed("active", true)
     .text("Lacks Healthcare (%)");
 
@@ -278,7 +293,7 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     .attr("y", -20)
     .attr("x", 0)
     .attr("dy", "1em")
-    .attr("value", "smokes") // value to grab for event listener
+    .attr("value", "smokes")
     .classed("inactive", true)
     .text("Smokes (%)");
 
@@ -287,40 +302,34 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     .attr("y", -40)
     .attr("x", 0)
     .attr("dy", "1em")
-    .attr("value", "obesity") // value to grab for event listener
+    .attr("value", "obesity")
     .classed("inactive", true)
     .text("Obese (%)");
 
-  // updateToolTip function above csv import
+  // Updating the toolTip for the default scatter plot points
   circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
-  // x axis labels event listener
+  //////////////////////////////////////////////////////////////////////////////
+  // This section is where on-click events to any of the axis labels are      //
+  // listened for and where the properties of the clicked axis label are      //
+  // passed to the each of the previously defined fucntions so that the       //
+  // scatter plot can be updated with the data the user has selected.         //
+  //////////////////////////////////////////////////////////////////////////////
   xlabelsGroup.selectAll("text")
     .on("click", function() {
-      // get value of selection
+      // Retrieving the xValue of the clicked x-axis label
       let xValue = d3.select(this).attr("value");
-      // console.log(xValue);
+
+      // Passing the new chosenXAxis to the chart building functions
       if (xValue !== chosenXAxis) {
-        // replaces chosenXAxis with value
         chosenXAxis = xValue;
-        // console.log(chosenXAxis);
-        // functions here found above csv import
-        // updates x scale for new data
         xLinearScale = xScale(healthData, chosenXAxis);
-
-        // updates x axis with transition
         xAxis = renderXAxe(xLinearScale, xAxis);
-
-        // updates circles with new x values
         circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis);
-
-        // updates tooltips with new info
         circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
-
-        //
         circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
           xLinearScale, yLinearScale);
-        // changes classes to change bold text
+        // Updating the active or inactive status of each x-axis label
         if (chosenXAxis === "poverty") {
           povertyLabel
             .classed("active", true)
@@ -356,35 +365,22 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
         }
       }
     });
-    console.log(chosenYAxis);
-    // y axis labels event listener
+
     ylabelsGroup.selectAll("text")
       .on("click", function() {
-        // get value of selection;
+        // Retrieving the xValue of the clicked y-axis label
         let  yValue = d3.select(this).attr("value");
 
+        // Passing the new chosenXAxis to the chart building functions
         if (yValue !== chosenYAxis) {
-
-          // replaces chosenXAxis with value
           chosenYAxis = yValue;
-          console.log(chosenYAxis);
-          // functions here found above csv import
-          // updates x scale for new data
           yLinearScale = yScale(healthData, chosenYAxis);
-          console.log(yLinearScale);
-          // updates x axis with transition
           yAxis = renderYAxe(yLinearScale, yAxis);
-
-          // updates circles with new x values
           circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis);
-
-          // updates tooltips with new info
           circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
-
-          //
           circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
             xLinearScale, yLinearScale);
-          // changes classes to change bold text
+          // Updating the active or inactive status of each y-axis label
           if (chosenYAxis === "healthcare") {
             healthcareLabel
               .classed("active", true)
