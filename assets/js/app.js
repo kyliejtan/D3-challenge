@@ -193,7 +193,9 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
 
   // Initializing a variable with the the default linear scale for the y axis
   let yLinearScale = d3.scaleLinear()
-    .domain([d3.max(healthData, d => d.healthcare), 0])
+    .domain([d3.max(healthData, d => d[chosenYAxis]) * 1.2,
+      d3.min(healthData, d => d[chosenYAxis]) * 0.8
+    ])
     .range([0, height]);
 
   // Initializing variables with the default x and y axes
