@@ -19,27 +19,26 @@
 
 <body>
   <div class="container">
-    <div class="row">
+    <div class="row" id="title">
       <div class="col-xs-12 col-md-12">
         <h1>D3Times</h1>
       </div>
     </div>
-    <div class="row">
-      <div class="col-xs-12  col-md-9">
+    <div class="row" id="chartArea">
+      <div class="col-xs-12  col-md-12">
         <div id="scatter">
           <!-- We append our chart here. -->
         </div>
       </div>
     </div>
     <div class="row">
-      <div class="col-xs-12  col-md-9">
+      <div class="col-xs-12  col-md-12">
         <div class="article">
           <h2>Correlations Discovered Between Health Risks and Age, Income</h2>
-          <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor
-            quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean
-            ultricies mi vitae est. Mauris placerat eleifend leo.</p>
-
-    
+          <p>Based on the r-squared value derived from the linear regression of
+             the plotted data for the percentage of people who lack healthcare
+             as a function of the percentage of people in poverty, there appears
+             to be a mild correlation between the two quantities.</p>
         </div>
       </div>
     </div>
@@ -47,7 +46,7 @@
 
   <!-- Footer-->
   <div id="footer">
-    <p>The Coding Boot Camp&copy;2016</p>
+
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
 

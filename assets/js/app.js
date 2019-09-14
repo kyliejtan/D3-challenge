@@ -11,7 +11,7 @@ let margin = {
   right: 20,
   bottom: 100,
   left:100
-}
+};
 // Calculating the dimensions of the svg chart area
 let width = svgWidth - margin.left - margin.right;
 let height = svgHeight - margin.top - margin.bottom;
@@ -29,7 +29,7 @@ let chartGroup = svg.append("g")
 
 // Initial x-axis parameter
 let chosenXAxis = "poverty";
-let chosenYAxis = "healthcare"
+let chosenYAxis = "healthcare";
 ////////////////////////////////////////////////////////////////////////////////
 // This section is where the functions that will help build the scatter plot  //
 // are defined.                                                               //
@@ -45,7 +45,7 @@ function capitalizeFirstLetter(str) {
 function titleCase(str) {
     return str.split(" ").map(x => capitalizeFirstLetter(x)).join(" ")
 };
-//
+// Initializing a function to scale the x-axis
 function xScale(healthData, chosenXAxis) {
   // create scales
   let  xLinearScale = d3.scaleLinear()
@@ -55,9 +55,8 @@ function xScale(healthData, chosenXAxis) {
     .range([0, width]);
 
   return xLinearScale;
-
-}
-//
+};
+// Initializing a function to scale the y-axis
 function yScale(healthData, chosenYAxis) {
   // create scales
   let  yLinearScale = d3.scaleLinear()
@@ -67,8 +66,9 @@ function yScale(healthData, chosenYAxis) {
     .range([height, 0]);
 
   return yLinearScale;
-}
-// function used for updating xAxis let  upon click on axis label
+};
+// Initializing a function that will re-scale the x-axis when a new dataset is
+// selected
 function renderXAxe(newXScale, xAxis) {
   let bottomAxis = d3.axisBottom(newXScale);
 
@@ -77,8 +77,9 @@ function renderXAxe(newXScale, xAxis) {
     .call(bottomAxis);
 
   return xAxis;
-}
-//
+};
+// Initializing a function that will re-scale the y-axis when a new dataset is
+// selected
 function renderYAxe(newYScale, yAxis) {
   let leftAxis = d3.axisLeft(newYScale);
 
@@ -87,8 +88,9 @@ function renderYAxe(newYScale, yAxis) {
     .call(leftAxis);
 
   return yAxis;
-}
-//
+};
+// Initializing a function that render new scatter plot points when a new
+// x-axis is selected
 function renderXCircles(circlesGroup, newXScale, chosenXaxis) {
 
   circlesGroup.transition()
@@ -96,16 +98,18 @@ function renderXCircles(circlesGroup, newXScale, chosenXaxis) {
     .attr("cx", d => newXScale(d[chosenXAxis]));
 
   return circlesGroup;
-}
-//
+};
+// Initializing a function that render new scatter plot points when a new
+// y-axis is selected
 function renderYCircles(circlesGroup, newYScale, chosenYaxis) {
   circlesGroup.transition()
     .duration(1000)
     .attr("cy", d => newYScale(d[chosenYAxis]));
 
   return circlesGroup;
-}
-// Appending text inside each circle
+};
+// Initializing a function that render new scatter plot points labels when
+// a new axis is selected
 function renderPointLabels(circleLabels, chosenXAxis, chosenYAxis, xLinearScale, yLinearScale) {
 
   circleLabels.transition()
@@ -124,9 +128,9 @@ function renderPointLabels(circleLabels, chosenXAxis, chosenYAxis, xLinearScale,
     .attr("text-anchor", "middle")
     .attr("fill", "white");
 
-  return circleLabels
+  return circleLabels;
 };
-// function used for updating circles group with new tooltip
+// Initializing a function that will update the circles group with new tooltips
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
   label = `${chosenYAxis + "vs." + chosenXAxis}`
@@ -147,17 +151,18 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     d3.select(this)
       .attr("fill", "pink");
 
-  })
+  });
     // onmouseout event
-    .on("mouseout", function(data, index) {
+    circlesGroup.on("mouseout", function(data, index) {
       toolTip.hide(data);
       d3.select(this)
-        .attr("fill", "lightblue");
+        .attr("fill", "lightblue")
     });
 
   return circlesGroup;
-}
-//
+};
+// Initializing a function that perform a least squares regression on the plotted
+// scatter plot
 function linearRegression(x, y){
   let lr = {};
   let n = y.length;
@@ -174,7 +179,7 @@ function linearRegression(x, y){
       sum_xy += (x[i]*y[i]);
       sum_xx += (x[i]*x[i]);
       sum_yy += (y[i]*y[i]);
-  }
+  };
 
   lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
   lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
@@ -182,8 +187,9 @@ function linearRegression(x, y){
     *(n*sum_yy-sum_y*sum_y)),2);
 
   return lr;
-}
-//
+};
+// Initializing a function that will return the parameters for plotting a line
+// of best fit based on the previously performed least squares regression
 function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
 
   let xArray = dataset.map(data => data[chosenXAxis]);
@@ -192,9 +198,9 @@ function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
   let regressionLineStats = linearRegression(xArray, yArray);
   let m = regressionLineStats.slope;
   let b = regressionLineStats.intercept;
-  let r2 = regressionLineStats.r2
-  let yPoints
-  let sortedXArray
+  let r2 = regressionLineStats.r2;
+  let yPoints;
+  let sortedXArray;
   if (m > 0) {
     yPoints = x.map(point => m * point + b).sort((a, b) => a - b);
     sortedXArray = x.sort((a, b) => a - b);
@@ -202,7 +208,7 @@ function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
   else if (m < 0) {
     yPoints = x.map(point => m * point + b).sort((a, b) => b - a);
     sortedXArray = x.sort((b, a) => b - a);
-  }
+  };
 
   let regressionLineArray = []
 
@@ -210,55 +216,59 @@ function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
     regressionLineArray.push({
       x: sortedXArray[i],
       y: yPoints[i]
-    })
+    });
   };
-  //console.log("yArray"+yArray.sort((a, b) => a - b));
-  let yMaxConst = d3.max(yArray) / d3.max(yPoints)
+  // Calculating correction constants to be used to scale the line of best fit
+  // to the scale currently defined for the chartGroup
+  let yMaxConst = d3.max(yArray) / d3.max(yPoints);
+  let yMinConst = d3.min(yArray) / d3.min(yPoints);
 
-  //console.log("array"+d3.max(yArray) +" i "+ d3.max(yPoints));
-  let yMinConst = d3.min(yArray) / d3.min(yPoints)
-  //console.log("array"+d3.min(yArray) +" i "+  d3.min(yPoints));
-
+  // Calculating the scale for the line of best fit
   let xdata = d3.scaleLinear()
       .domain([d3.min(regressionLineArray, data => data.x) ,
         d3.max(regressionLineArray, data => data.x)])
       .range([0, width]);
 
-  // Configure a linear scale with a range between the chartHeight and 0
+  // Calculating the scale for the line of best fit adjusted to match the
+  // the scale currently defined for the chartGroup
   let ydata = d3.scaleLinear()
     .domain([d3.max(regressionLineArray, data => data.y) * yMaxConst * 1.02,
       d3.min(regressionLineArray, data => data.y) * yMinConst * 0.80])
     .range([0, height]);
 
-
+  // Initializing a variable with the x and y coordinates of the line of best fit
   let drawLine = d3.line()
     .x(data => xdata(data.x))
     .y(data => ydata(data.y));
 
-  let lineData = drawLine(regressionLineArray)
+  // Initializing a variable with the line data for the line of best fit
+  let lineData = drawLine(regressionLineArray);
 
-  return [lineData, m, b, r2]
+  return [lineData, m, b, r2];
 };
+// Initializing a function that will render a new line of best fit when a new
+// axis is selected
 function renderLineGroup(lineGroup, lineData) {
   lineGroup.transition()
     .duration(1000)
     .attr("d", d => lineData);
 
   return lineGroup;
-
-}
-//
+};
+// Initializing a cuntion that will render new text displaying the resultant
+// equation for the line of best fit and r^2 value when a new axis is selected
 function renderText(equationText) {
   equationText.transition()
     .duration(1000)
     .html(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
     ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
 
-  return equationText
-}
-//
+  return equationText;
+};
+// Initializing a function that will render a new paragraph analyzing the
+// correlation between the two selected datasets when a new axis is selected
 function renderParagraph(chosenXAxis, chosenYAxis) {
-  let paragraph
+  let paragraph;
 
   if (chosenXAxis === "poverty" && chosenYAxis === "healthcare") {
     paragraph = "Based on the r-squared value derived from the linear regression\
@@ -313,9 +323,9 @@ function renderParagraph(chosenXAxis, chosenYAxis) {
     of the plotted data for the percentage of people who are obese\
     as a function of median household income, there appears\
     to be a moderate correlation between the two quantities."
-  }
+  };
   return paragraph
-}
+};
 ////////////////////////////////////////////////////////////////////////////////
 // This section is where the csv data is read in and passed to the chart-     //
 // building functions, the results of which are then appended to the svg chart//
@@ -513,12 +523,12 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
         circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
         circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
           xLinearScale, yLinearScale);
-        lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
-        lineGroup = renderLineGroup (lineGroup, lineData)
+        lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0];
+        lineGroup = renderLineGroup (lineGroup, lineData);
         equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
         ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
         r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
-        d3.select("p").text(renderParagraph(chosenXAxis, chosenYAxis))
+        d3.select("p").text(renderParagraph(chosenXAxis, chosenYAxis));
         // Updating the active or inactive status of each x-axis label
         if (chosenXAxis === "poverty") {
           povertyLabel
@@ -552,8 +562,8 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
           incomeLabel
             .classed("active", true)
             .classed("inactive", false);
-        }
-      }
+        };
+      };
     });
 
   ylabelsGroup.selectAll("text")
@@ -571,11 +581,11 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
         circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
           xLinearScale, yLinearScale);
         lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
-        lineGroup = renderLineGroup (lineGroup, lineData)
+        lineGroup = renderLineGroup (lineGroup, lineData);
         equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
         ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
         r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
-        d3.select("p").text(renderParagraph(chosenXAxis, chosenYAxis))
+        d3.select("p").text(renderParagraph(chosenXAxis, chosenYAxis));
         // lineGroup = renderLineGroup (lineGroup, healthData, chosenXAxis, chosenYAxis)
         // Updating the active or inactive status of each y-axis label
         if (chosenYAxis === "healthcare") {
