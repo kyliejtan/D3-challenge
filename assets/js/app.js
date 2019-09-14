@@ -157,6 +157,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
   return circlesGroup;
 }
+//
 function linearRegression(x, y){
   let lr = {};
   let n = y.length;
@@ -182,7 +183,7 @@ function linearRegression(x, y){
 
   return lr;
 }
-
+//
 function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
 
   let xArray = dataset.map(data => data[chosenXAxis]);
@@ -236,7 +237,7 @@ function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
 
   let lineData = drawLine(regressionLineArray)
 
-  return [lineData, regressionLineStats, m, yPoints]
+  return [lineData, m, b, r2]
 };
 function renderLineGroup (lineGroup, lineData) {
   lineGroup.transition()
@@ -247,12 +248,13 @@ function renderLineGroup (lineGroup, lineData) {
 
 }
 //
-function renderYCircles(circlesGroup, newYScale, chosenYaxis) {
-  circlesGroup.transition()
+function renderText (equationText) {
+  equationText.transition()
     .duration(1000)
-    .attr("cy", d => newYScale(d[chosenYAxis]));
+    .html(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
+    ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
 
-  return circlesGroup;
+  return equationText
 }
 ////////////////////////////////////////////////////////////////////////////////
 // This section is where the csv data is read in and passed to the chart-     //
@@ -348,13 +350,26 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     .attr("fill", "white");
 
   // Append an SVG path and plot its points using the line function
-  let lineGroup = chartGroup.selectAll("path")
-    .data(healthData)
-    .enter()
+  let lineGroup = chartGroup
     .append("path")
     .attr("d", regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0])
     .classed("line", true);
 
+  //
+  let textGroup = chartGroup.append("g")
+    .attr("transform", `translate(${width / 2}, ${height - 50})`);
+
+  // The following two variables store the properties of each text
+  let equationText = textGroup.append("text")
+    .attr("x", 50)
+    .attr("y", 15)
+    .text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
+    ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
+
+  let r2Text = textGroup.append("text")
+    .attr("x", 50)
+    .attr("y", 40)
+    .text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
   // Initializing a variable with an area for x-axis labels that has been
   // appended to the svg chart area
   let xlabelsGroup = chartGroup.append("g")
@@ -440,7 +455,9 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
           xLinearScale, yLinearScale);
         lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
         lineGroup = renderLineGroup (lineGroup, lineData)
-        console.log(regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]);
+        equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
+        ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
+        r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
         // Updating the active or inactive status of each x-axis label
         if (chosenXAxis === "poverty") {
           povertyLabel
@@ -494,7 +511,9 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
             xLinearScale, yLinearScale);
           lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
           lineGroup = renderLineGroup (lineGroup, lineData)
-          console.log(regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]);
+          equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
+          ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
+          r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
           // lineGroup = renderLineGroup (lineGroup, healthData, chosenXAxis, chosenYAxis)
           // Updating the active or inactive status of each y-axis label
           if (chosenYAxis === "healthcare") {
