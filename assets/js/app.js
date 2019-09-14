@@ -239,7 +239,7 @@ function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
 
   return [lineData, m, b, r2]
 };
-function renderLineGroup (lineGroup, lineData) {
+function renderLineGroup(lineGroup, lineData) {
   lineGroup.transition()
     .duration(1000)
     .attr("d", d => lineData);
@@ -248,13 +248,73 @@ function renderLineGroup (lineGroup, lineData) {
 
 }
 //
-function renderText (equationText) {
+function renderText(equationText) {
   equationText.transition()
     .duration(1000)
     .html(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
     ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
 
   return equationText
+}
+//
+function renderParagraph(chosenXAxis, chosenYAxis) {
+  let paragraph
+
+  if (chosenXAxis === "poverty" && chosenYAxis === "healthcare") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who lack healthcare as a\
+    function of the percentage of people in poverty, there appears to be a mild\
+    correlation between the two quantities."
+  }
+  else if (chosenXAxis === "poverty" && chosenYAxis === "smokes") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who smoke\
+    as a function of the percentage of people in poverty, there appears\
+    to be a mild correlation between the two quantities."
+  }
+  else if (chosenXAxis === "poverty" && chosenYAxis === "obesity") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who are obese\
+    as a function of the percentage of people in poverty, there appears\
+    to be a mild correlation between the two quantities."
+  }
+  else if (chosenXAxis === "age" && chosenYAxis === "healthcare") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who lack healthcare\
+    as a function of median age, there appears\
+    to be a weak correlation between the two quantities."
+  }
+  else if (chosenXAxis === "age" && chosenYAxis === "smokes") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who smoke\
+    as a function of median age, there appears\
+    to be very weak correlation between the two quantities."
+  }
+  else if (chosenXAxis === "age" && chosenYAxis === "obesity") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who are obese\
+    as a function of median age, there appears\
+    to be very weak correlation between the two quantities."
+  }
+  else if (chosenXAxis === "income" && chosenYAxis === "healthcare") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who lack healthcare\
+    as a function of median household income, there appears\
+    to be a mild correlation between the two quantities."
+  }
+  else if (chosenXAxis === "income" && chosenYAxis === "smokes") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who smoke\
+    as a function of median household income, there appears\
+    to be a moderate correlation between the two quantities."
+  }
+  else if (chosenXAxis === "income" && chosenYAxis === "obesity") {
+    paragraph = "Based on the r-squared value derived from the linear regression\
+    of the plotted data for the percentage of people who are obese\
+    as a function of median household income, there appears\
+    to be a moderate correlation between the two quantities."
+  }
+  return paragraph
 }
 ////////////////////////////////////////////////////////////////////////////////
 // This section is where the csv data is read in and passed to the chart-     //
@@ -458,6 +518,7 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
         equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
         ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
         r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
+        d3.select("p").text(renderParagraph(chosenXAxis, chosenYAxis))
         // Updating the active or inactive status of each x-axis label
         if (chosenXAxis === "poverty") {
           povertyLabel
@@ -495,60 +556,61 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
       }
     });
 
-    ylabelsGroup.selectAll("text")
-      .on("click", function() {
-        // Retrieving the xValue of the clicked y-axis label
-        let  yValue = d3.select(this).attr("value");
+  ylabelsGroup.selectAll("text")
+    .on("click", function() {
+      // Retrieving the xValue of the clicked y-axis label
+      let  yValue = d3.select(this).attr("value");
 
-        // Passing the new chosenXAxis to the chart building functions
-        if (yValue !== chosenYAxis) {
-          chosenYAxis = yValue;
-          yLinearScale = yScale(healthData, chosenYAxis);
-          yAxis = renderYAxe(yLinearScale, yAxis);
-          circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis);
-          circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
-          circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
-            xLinearScale, yLinearScale);
-          lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
-          lineGroup = renderLineGroup (lineGroup, lineData)
-          equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
-          ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
-          r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
-          // lineGroup = renderLineGroup (lineGroup, healthData, chosenXAxis, chosenYAxis)
-          // Updating the active or inactive status of each y-axis label
-          if (chosenYAxis === "healthcare") {
-            healthcareLabel
-              .classed("active", true)
-              .classed("inactive", false);
-            smokesLabel
-              .classed("active", false)
-              .classed("inactive", true);
-            obeseLabel
-              .classed("active", false)
-              .classed("inactive", true);
-          }
-          else if (chosenYAxis === "smokes") {
-            healthcareLabel
-              .classed("active", false)
-              .classed("inactive", true);
-            smokesLabel
-              .classed("active", true)
-              .classed("inactive", false);
-            obeseLabel
-              .classed("active", false)
-              .classed("inactive", true);
-          }
-          else {
-            healthcareLabel
-              .classed("active", false)
-              .classed("inactive", true);
-            smokesLabel
-              .classed("active", false)
-              .classed("inactive", true);
-            obeseLabel
-              .classed("active", true)
-              .classed("inactive", false);
-          }
+      // Passing the new chosenXAxis to the chart building functions
+      if (yValue !== chosenYAxis) {
+        chosenYAxis = yValue;
+        yLinearScale = yScale(healthData, chosenYAxis);
+        yAxis = renderYAxe(yLinearScale, yAxis);
+        circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis);
+        circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+        circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
+          xLinearScale, yLinearScale);
+        lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
+        lineGroup = renderLineGroup (lineGroup, lineData)
+        equationText.text(`y = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[1]}x +
+        ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]}`);
+        r2Text.text(`R^2 = ${regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[3]}`);
+        d3.select("p").text(renderParagraph(chosenXAxis, chosenYAxis))
+        // lineGroup = renderLineGroup (lineGroup, healthData, chosenXAxis, chosenYAxis)
+        // Updating the active or inactive status of each y-axis label
+        if (chosenYAxis === "healthcare") {
+          healthcareLabel
+            .classed("active", true)
+            .classed("inactive", false);
+          smokesLabel
+            .classed("active", false)
+            .classed("inactive", true);
+          obeseLabel
+            .classed("active", false)
+            .classed("inactive", true);
         }
-      });
+        else if (chosenYAxis === "smokes") {
+          healthcareLabel
+            .classed("active", false)
+            .classed("inactive", true);
+          smokesLabel
+            .classed("active", true)
+            .classed("inactive", false);
+          obeseLabel
+            .classed("active", false)
+            .classed("inactive", true);
+        }
+        else {
+          healthcareLabel
+            .classed("active", false)
+            .classed("inactive", true);
+          smokesLabel
+            .classed("active", false)
+            .classed("inactive", true);
+          obeseLabel
+            .classed("active", true)
+            .classed("inactive", false);
+        }
+      }
+    });
 });
