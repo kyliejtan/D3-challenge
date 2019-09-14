@@ -49,8 +49,8 @@ function titleCase(str) {
 function xScale(healthData, chosenXAxis) {
   // create scales
   let  xLinearScale = d3.scaleLinear()
-    .domain([d3.min(healthData, d => d[chosenXAxis]) * 0.8,
-      d3.max(healthData, d => d[chosenXAxis]) * 1.2
+    .domain([d3.min(healthData, d => d[chosenXAxis]) * 0.95,
+      d3.max(healthData, d => d[chosenXAxis])
     ])
     .range([0, width]);
 
@@ -61,10 +61,10 @@ function xScale(healthData, chosenXAxis) {
 function yScale(healthData, chosenYAxis) {
   // create scales
   let  yLinearScale = d3.scaleLinear()
-    .domain([d3.max(healthData, d => d[chosenYAxis]) * 1.2,
-      d3.min(healthData, d => d[chosenYAxis]) * 0.8
+    .domain([d3.min(healthData, d => d[chosenYAxis]) * 0.80,
+      d3.max(healthData, d => d[chosenYAxis]) * 1.02
     ])
-    .range([0, height]);
+    .range([height, 0]);
 
   return yLinearScale;
 }
@@ -188,15 +188,17 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
   });
   // Initializing a variable with the the default linear scale for the x axis
   let xLinearScale = d3.scaleLinear()
-    .domain(d3.extent(healthData, d => d.poverty))
+    .domain([d3.min(healthData, d => d.poverty) * 0.95,
+      d3.max(healthData, d => d.poverty)
+    ])
     .range([0, width]);
 
   // Initializing a variable with the the default linear scale for the y axis
   let yLinearScale = d3.scaleLinear()
-    .domain([d3.max(healthData, d => d[chosenYAxis]) * 1.2,
-      d3.min(healthData, d => d[chosenYAxis]) * 0.8
+    .domain([d3.min(healthData, d => d.healthcare) * 0.80,
+      d3.max(healthData, d => d.healthcare) * 1.02
     ])
-    .range([0, height]);
+    .range([height, 0]);
 
   // Initializing variables with the default x and y axes
   let bottomAxis = d3.axisBottom(xLinearScale);

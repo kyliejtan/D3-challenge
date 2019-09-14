@@ -18,6 +18,13 @@ hr {
   margin: 5px;
 }
 
+#title {
+  margin-top: 20px;
+}
+
+#chartArea {
+  margin-top: 50px;
+}
 
 #footer {
   position: absolute;
