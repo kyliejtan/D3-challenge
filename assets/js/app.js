@@ -157,6 +157,103 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
   return circlesGroup;
 }
+function linearRegression(x, y){
+  let lr = {};
+  let n = y.length;
+  let sum_x = 0;
+  let sum_y = 0;
+  let sum_xy = 0;
+  let sum_xx = 0;
+  let sum_yy = 0;
+
+  for (let i = 0; i < y.length; i++) {
+
+      sum_x += x[i];
+      sum_y += y[i];
+      sum_xy += (x[i]*y[i]);
+      sum_xx += (x[i]*x[i]);
+      sum_yy += (y[i]*y[i]);
+  }
+
+  lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+  lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
+  lr['r2'] = Math.pow((n*sum_xy - sum_x*sum_y)/Math.sqrt((n*sum_xx-sum_x*sum_x)
+    *(n*sum_yy-sum_y*sum_y)),2);
+
+  return lr;
+}
+
+function regressionLineYPoints(dataset, chosenXAxis, chosenYAxis) {
+
+  let xArray = dataset.map(data => data[chosenXAxis]);
+  let yArray = dataset.map(data => data[chosenYAxis]);
+  let x = dataset.map(data => data[chosenXAxis]);
+  let regressionLineStats = linearRegression(xArray, yArray);
+  let m = regressionLineStats.slope;
+  let b = regressionLineStats.intercept;
+  let r2 = regressionLineStats.r2
+  let yPoints
+  let sortedXArray
+  if (m > 0) {
+    yPoints = x.map(point => m * point + b).sort((a, b) => a - b);
+    sortedXArray = x.sort((a, b) => a - b);
+  }
+  else if (m < 0) {
+    yPoints = x.map(point => m * point + b).sort((a, b) => b - a);
+    sortedXArray = x.sort((b, a) => b - a);
+  }
+
+  let regressionLineArray = []
+
+  for (let i = 0; i < xArray.length; i++) {
+    regressionLineArray.push({
+      x: sortedXArray[i],
+      y: yPoints[i]
+    })
+  };
+  //console.log("yArray"+yArray.sort((a, b) => a - b));
+  let yMaxConst = d3.max(yArray) / d3.max(yPoints)
+
+  //console.log("array"+d3.max(yArray) +" i "+ d3.max(yPoints));
+  let yMinConst = d3.min(yArray) / d3.min(yPoints)
+  //console.log("array"+d3.min(yArray) +" i "+  d3.min(yPoints));
+
+  let xdata = d3.scaleLinear()
+      .domain([d3.min(regressionLineArray, data => data.x) ,
+        d3.max(regressionLineArray, data => data.x)])
+      .range([0, width]);
+
+  // Configure a linear scale with a range between the chartHeight and 0
+  let ydata = d3.scaleLinear()
+    .domain([d3.max(regressionLineArray, data => data.y) * yMaxConst * 1.02,
+      d3.min(regressionLineArray, data => data.y) * yMinConst * 0.80])
+    .range([0, height]);
+
+
+  let drawLine = d3.line()
+    .x(data => xdata(data.x))
+    .y(data => ydata(data.y));
+
+  let lineData = drawLine(regressionLineArray)
+
+  return [lineData, regressionLineStats, m, yPoints]
+};
+function renderLineGroup (lineGroup, lineData) {
+  lineGroup.transition()
+    .duration(1000)
+    .attr("d", d => lineData);
+
+  return lineGroup;
+
+}
+//
+function renderYCircles(circlesGroup, newYScale, chosenYaxis) {
+  circlesGroup.transition()
+    .duration(1000)
+    .attr("cy", d => newYScale(d[chosenYAxis]));
+
+  return circlesGroup;
+}
 ////////////////////////////////////////////////////////////////////////////////
 // This section is where the csv data is read in and passed to the chart-     //
 // building functions, the results of which are then appended to the svg chart//
@@ -250,6 +347,14 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
     .attr("text-anchor", "middle")
     .attr("fill", "white");
 
+  // Append an SVG path and plot its points using the line function
+  let lineGroup = chartGroup.selectAll("path")
+    .data(healthData)
+    .enter()
+    .append("path")
+    .attr("d", regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0])
+    .classed("line", true);
+
   // Initializing a variable with an area for x-axis labels that has been
   // appended to the svg chart area
   let xlabelsGroup = chartGroup.append("g")
@@ -333,6 +438,9 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
         circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
         circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
           xLinearScale, yLinearScale);
+        lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
+        lineGroup = renderLineGroup (lineGroup, lineData)
+        console.log(regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]);
         // Updating the active or inactive status of each x-axis label
         if (chosenXAxis === "poverty") {
           povertyLabel
@@ -384,6 +492,10 @@ d3.csv("assets/data/data.csv", function(error, healthData) {
           circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
           circleLabels = renderPointLabels(circleLabels, chosenXAxis, chosenYAxis,
             xLinearScale, yLinearScale);
+          lineData = regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[0]
+          lineGroup = renderLineGroup (lineGroup, lineData)
+          console.log(regressionLineYPoints(healthData, chosenXAxis, chosenYAxis)[2]);
+          // lineGroup = renderLineGroup (lineGroup, healthData, chosenXAxis, chosenYAxis)
           // Updating the active or inactive status of each y-axis label
           if (chosenYAxis === "healthcare") {
             healthcareLabel
